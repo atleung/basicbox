@@ -122,12 +122,12 @@ const search=document.getElementById('matchup-search');
 const progress=document.querySelector('#progress-bar');
 const progressText=document.getElementById('practice-count');
 let seen={};try{seen=JSON.parse(localStorage.getItem('basicbox-practice-tw-2026')||'{}')}catch(e){}
-function setMatch(id,scroll=false){
+function setMatch(id,scroll=false,updateUrl=true){
  panels.forEach(p=>p.classList.toggle('active',p.dataset.id===id));
  choices.forEach(c=>{const on=c.dataset.id===id;c.classList.toggle('active',on);c.setAttribute('aria-pressed',String(on))});
  const input=document.querySelector(`input[data-done="${id}"]`);if(input)input.checked=!!seen[id];
- if(scroll || window.matchMedia('(max-width:760px)').matches){document.querySelector('.matchup-main').scrollIntoView({behavior:'smooth',block:'start'});}
- try{history.replaceState(null,'','#mu-'+id)}catch(e){}
+ if(scroll || (updateUrl && window.matchMedia('(max-width:760px)').matches)){document.querySelector('.matchup-main').scrollIntoView({behavior:'smooth',block:'start'});}
+ if(updateUrl){try{history.replaceState(null,'','#mu-'+id)}catch(e){}}
 }
 function filterChoices(){let v=search.value.trim().toLowerCase(),tier=document.querySelector('.filter.active')?.dataset.tier||'all';let count=0;choices.forEach(c=>{const pass=(c.dataset.search.toLowerCase().includes(v))&&(tier==='all'||c.dataset.tier===tier);c.hidden=!pass;if(pass)count++});document.getElementById('nothing-found').style.display=count?'none':'block';const shown=choices.find(x=>!x.hidden);const chosen=choices.find(x=>x.classList.contains('active'));if(shown&&(chosen?.hidden||!chosen))setMatch(shown.dataset.id)}
 choices.forEach(c=>c.addEventListener('click',()=>setMatch(c.dataset.id,true)));
@@ -141,6 +141,6 @@ document.querySelectorAll('[data-zoom]').forEach(b=>b.addEventListener('click',(
 function closeZoom(){if(!lightbox.classList.contains('active'))return;lightbox.classList.remove('active');document.body.style.overflow='';lastZoomTrigger?.focus();}
 document.getElementById('close-lightbox').addEventListener('click',closeZoom);lightbox.addEventListener('click',e=>{if(e.target===lightbox)closeZoom()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeZoom()});
 document.getElementById('copy-deck').addEventListener('click',async()=>{const text=document.getElementById('deck-plain').value;const b=document.getElementById('copy-deck');try{await navigator.clipboard.writeText(text);b.textContent='已複製牌表 ✓'}catch(e){const t=document.getElementById('deck-plain');t.hidden=false;t.select();try{document.execCommand('copy');b.textContent='已複製牌表 ✓'}catch(x){b.textContent='請選取下方文字複製'}}});
-const frag=decodeURIComponent(location.hash.slice(1));if(frag.startsWith('mu-') || frag.startsWith('對局-')){const id=frag.slice(frag.startsWith('mu-')?3:3);if(choices.some(x=>x.dataset.id===id))setMatch(id)}else{setMatch('pult')}
+const frag=decodeURIComponent(location.hash.slice(1));if(frag.startsWith('mu-') || frag.startsWith('對局-')){const id=frag.slice(frag.startsWith('mu-')?3:3);if(choices.some(x=>x.dataset.id===id))setMatch(id,true,false);else setMatch('pult',false,false)}else{setMatch('pult',false,false)}
 
  document.querySelectorAll('[data-to-match]').forEach(a=>a.addEventListener('click',()=>setMatch(a.dataset.toMatch,true)));</script></body></html>
